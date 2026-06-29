@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ExternalLink, Save, Globe, Phone, Instagram, Twitter, Facebook,
   Copy, CheckCircle, Calendar, Link2, Clock, Hotel, Wrench,
-  Package, Video, MapPin,
+  Package, Video, MapPin, Download, QrCode,
 } from 'lucide-react';
 import { shopsStore } from '@/lib/store';
 import { SHORT_STOREFRONT_URL } from '@/lib/dummy-data';
@@ -463,11 +463,12 @@ export default function ShopCustomisePage() {
               {/* Banner */}
               <div
                 className="h-16 relative"
-                style={{
-                  backgroundImage: merged.bannerUrl ? `url(${merged.bannerUrl})` : undefined,
+                style={merged.bannerUrl ? {
+                  backgroundImage: `url(${merged.bannerUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  background: !merged.bannerUrl ? `linear-gradient(135deg, ${merged.theme?.primaryColor ?? '#0b7d8e'}, #052e36)` : undefined,
+                } : {
+                  background: `linear-gradient(135deg, ${merged.theme?.primaryColor ?? '#0b7d8e'}, #052e36)`,
                 }}
               >
                 <div className="absolute inset-0 bg-black/25" />
@@ -511,6 +512,40 @@ export default function ShopCustomisePage() {
                 </button>
               </div>
             </div>
+
+            {/* QR Code */}
+            {shop && (
+              <div className="px-4 pb-4 pt-3 border-t border-primary-50">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <QrCode className="w-3 h-3 text-gray-400" />
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">QR Code</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${SHORT_STOREFRONT_URL}/s/${shop.slug}`)}&margin=5&color=${(merged.theme?.primaryColor ?? '#0b7d8e').replace('#', '')}`}
+                    alt="QR code"
+                    className="w-16 h-16 rounded-xl border border-primary-100 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] text-gray-400 truncate mb-1.5">{SHORT_STOREFRONT_URL}/s/{shop.slug}</p>
+                    <button
+                      onClick={() => {
+                        const url = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`${SHORT_STOREFRONT_URL}/s/${shop.slug}`)}&margin=15&color=${(merged.theme?.primaryColor ?? '#0b7d8e').replace('#', '')}`;
+                        fetch(url).then((r) => r.blob()).then((blob) => {
+                          const a = document.createElement('a');
+                          a.href = URL.createObjectURL(blob);
+                          a.download = `${shop.slug}-qr.png`;
+                          a.click();
+                        }).catch(() => window.open(url, '_blank'));
+                      }}
+                      className="flex items-center gap-1 text-[10px] text-primary font-semibold hover:underline"
+                    >
+                      <Download className="w-2.5 h-2.5" />Download PNG
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

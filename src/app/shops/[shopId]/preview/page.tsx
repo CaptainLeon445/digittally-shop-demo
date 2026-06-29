@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Monitor, Smartphone, Tablet, ExternalLink, RefreshCw, Eye } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, ExternalLink, RefreshCw, Eye, Download, QrCode } from 'lucide-react';
 import { shopsStore } from '@/lib/store';
+import { SHORT_STOREFRONT_URL } from '@/lib/dummy-data';
 import type { Shop } from '@/types';
 import Spinner from '@/components/ui/Spinner';
 
@@ -134,8 +135,49 @@ export default function PreviewPage() {
         </div>
       </div>
 
+      {/* QR Code */}
+      <div className="mt-6 p-5 bg-white border border-primary-100 rounded-2xl shadow-card">
+        <div className="flex items-center gap-2 mb-4">
+          <QrCode className="w-4 h-4 text-primary" />
+          <p className="text-sm font-semibold text-gray-700">Share via QR Code</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${SHORT_STOREFRONT_URL}/s/${shop.slug}`)}&margin=8&color=${shop.theme.primaryColor.replace('#', '')}`}
+            alt={`QR code for ${shop.name}`}
+            className="w-28 h-28 rounded-2xl border border-primary-100 flex-shrink-0"
+          />
+          <div>
+            <p className="font-semibold text-gray-900 mb-1 text-sm">{shop.name} — QR Code</p>
+            <p className="text-xs text-gray-500 mb-3 max-w-xs">
+              Customers scan this to open your storefront instantly. Print it at your location, share on social media, or add to your packaging.
+            </p>
+            <p className="text-xs font-mono text-gray-400 bg-gray-50 px-2.5 py-1.5 rounded-lg mb-3 truncate max-w-xs">
+              {SHORT_STOREFRONT_URL}/s/{shop.slug}
+            </p>
+            <button
+              onClick={() => {
+                const url = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(`${SHORT_STOREFRONT_URL}/s/${shop.slug}`)}&margin=20&color=${shop.theme.primaryColor.replace('#', '')}`;
+                fetch(url).then((r) => r.blob()).then((blob) => {
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `${shop.slug}-qr.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                }).catch(() => window.open(url, '_blank'));
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+              style={{ background: shop.theme.primaryColor }}
+            >
+              <Download className="w-4 h-4" />Download QR Code (PNG)
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Tips per type */}
-      <div className="mt-6 p-4 bg-white border border-primary-100 rounded-2xl shadow-card">
+      <div className="mt-4 p-4 bg-white border border-primary-100 rounded-2xl shadow-card">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What customers see on your storefront</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {shop.type === 'online_vendor' && (

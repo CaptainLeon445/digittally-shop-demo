@@ -81,6 +81,17 @@ const INVENTORY_CONFIG: Record<ShopType, InventoryConfig> = {
   },
 };
 
+const RESTAURANT_INVENTORY_CONFIG: InventoryConfig = {
+  itemLabel: 'Menu Item', pluralLabel: 'Menu', addLabel: 'Add Menu Item',
+  emptyMessage: 'Add your food and drink items to start taking orders.',
+  searchPlaceholder: 'Search menu items...',
+  showImages: true, showStock: false, showSku: false,
+  stockLabel: 'Daily Quantity', unitPlaceholder: 'serving / plate / glass',
+  priceLabel: 'Price', showDuration: false, showMeetingType: false,
+  showCapacity: false, showAmenities: false, showServiceArea: false,
+  categoryPlaceholder: 'Starters / Mains / Grills / Drinks / Desserts',
+};
+
 const MEETING_TYPE_OPTIONS: { value: MeetingType; label: string }[] = [
   { value: 'virtual', label: 'Virtual Only' },
   { value: 'in_person', label: 'In Person Only' },
@@ -100,10 +111,10 @@ const DURATION_PRESETS = [
 ];
 
 // ── Product Form ─────────────────────────────────────────────────
-function InventoryForm({ shopId, shopType, initial, onClose }: {
-  shopId: string; shopType: ShopType; initial?: Product; onClose: () => void;
+function InventoryForm({ shopId, shopType, configOverride, initial, onClose }: {
+  shopId: string; shopType: ShopType; configOverride?: InventoryConfig; initial?: Product; onClose: () => void;
 }) {
-  const config = INVENTORY_CONFIG[shopType];
+  const config = configOverride ?? INVENTORY_CONFIG[shopType];
   const queryClient = useQueryClient();
 
   const defaultProduct: Partial<Product> = shopType === 'online_vendor'
@@ -326,10 +337,10 @@ function InventoryForm({ shopId, shopType, initial, onClose }: {
 }
 
 // ── Item Card ────────────────────────────────────────────────────
-function InventoryCard({ product, shopType, onEdit, onDelete }: {
-  product: Product; shopType: ShopType; onEdit: () => void; onDelete: () => void;
+function InventoryCard({ product, shopType, configOverride, onEdit, onDelete }: {
+  product: Product; shopType: ShopType; configOverride?: InventoryConfig; onEdit: () => void; onDelete: () => void;
 }) {
-  const config = INVENTORY_CONFIG[shopType];
+  const config = configOverride ?? INVENTORY_CONFIG[shopType];
   const statusColors: Record<string, 'green' | 'gray' | 'red'> = { active: 'green', draft: 'gray', archived: 'red' };
 
   return (
@@ -461,7 +472,8 @@ export default function InventoryPage() {
   if (isLoading && !shop) return <div className="flex justify-center py-16"><Spinner size="lg" /></div>;
 
   const shopType: ShopType = shop?.type ?? 'online_vendor';
-  const config = INVENTORY_CONFIG[shopType];
+  const isRestaurant = shopType === 'hospitality' && !!shop?.restaurantMode;
+  const config = isRestaurant ? RESTAURANT_INVENTORY_CONFIG : INVENTORY_CONFIG[shopType];
 
   const filtered = (products ?? []).filter(
     (p) => !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.category?.toLowerCase().includes(search.toLowerCase())
@@ -515,6 +527,7 @@ export default function InventoryPage() {
               key={product.id}
               product={product}
               shopType={shopType}
+              configOverride={isRestaurant ? RESTAURANT_INVENTORY_CONFIG : undefined}
               onEdit={() => setEditProduct(product)}
               onDelete={() => setDeleteId(product.id)}
             />
@@ -524,12 +537,12 @@ export default function InventoryPage() {
 
       {/* Modals */}
       <Modal isOpen={showAdd} onClose={() => setShowAdd(false)} title={config.addLabel}>
-        {shop && <InventoryForm shopId={shopId} shopType={shopType} onClose={() => setShowAdd(false)} />}
+        {shop && <InventoryForm shopId={shopId} shopType={shopType} configOverride={isRestaurant ? RESTAURANT_INVENTORY_CONFIG : undefined} onClose={() => setShowAdd(false)} />}
       </Modal>
 
       <Modal isOpen={!!editProduct} onClose={() => setEditProduct(null)} title={`Edit ${config.itemLabel}`}>
         {editProduct && shop && (
-          <InventoryForm shopId={shopId} shopType={shopType} initial={editProduct} onClose={() => setEditProduct(null)} />
+          <InventoryForm shopId={shopId} shopType={shopType} configOverride={isRestaurant ? RESTAURANT_INVENTORY_CONFIG : undefined} initial={editProduct} onClose={() => setEditProduct(null)} />
         )}
       </Modal>
 

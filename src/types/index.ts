@@ -57,6 +57,7 @@ export interface Shop {
   minStayNights?: number;
   houseRules?: string;
   featuredAmenities?: string[];
+  restaurantMode?: boolean; // true → food menu + table ordering flow instead of room bookings
 }
 
 export interface ShopTheme {

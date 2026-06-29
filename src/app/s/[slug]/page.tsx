@@ -47,10 +47,12 @@ function Navbar({ shop, cartCount, cartTotal, onCartClick }: { shop: Shop; cartC
 function Hero({ shop, ctaContent }: { shop: Shop; ctaContent?: React.ReactNode }) {
   return (
     <div className="relative h-60 sm:h-80"
-      style={{
-        backgroundImage: shop.bannerUrl ? `url(${shop.bannerUrl})` : undefined,
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        background: !shop.bannerUrl ? `linear-gradient(135deg, ${shop.theme.primaryColor}, #052e36)` : undefined,
+      style={shop.bannerUrl ? {
+        backgroundImage: `url(${shop.bannerUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      } : {
+        background: `linear-gradient(135deg, ${shop.theme.primaryColor}, #052e36)`,
       }}>
       <div className="absolute inset-0 bg-black/45" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
@@ -916,6 +918,272 @@ function ServiceStorefront({ shop, products }: { shop: Shop; products: Product[]
   );
 }
 
+// ── Restaurant ───────────────────────────────────────────────────
+function TableOrderModal({ shop, cart, onClose, onSuccess }: { shop: Shop; cart: CartItem[]; onClose: () => void; onSuccess: () => void }) {
+  const [form, setForm] = useState({ name: '', tableNumber: '', notes: '' });
+  const [placing, setPlacing] = useState(false);
+  const [done, setDone] = useState(false);
+  const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+
+  const handlePlace = async () => {
+    if (!form.name.trim() || !form.tableNumber.trim()) return;
+    setPlacing(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setPlacing(false);
+    setDone(true);
+  };
+
+  if (done) return (
+    <div className="text-center py-6">
+      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+        <CheckCircle className="w-8 h-8 text-green-600" />
+      </div>
+      <h3 className="font-bold text-gray-900 text-lg mb-2">Order Sent to Kitchen!</h3>
+      <p className="text-gray-500 text-sm mb-1">Thank you, {form.name.split(' ')[0]}. Your food will be ready shortly.</p>
+      <p className="text-gray-400 text-xs mb-6">Table {form.tableNumber} — sit back and enjoy!</p>
+      <button onClick={onSuccess} className="px-6 py-2.5 rounded-xl text-white font-semibold" style={{ background: shop.theme.primaryColor }}>
+        Back to Menu
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+      <div className="space-y-1.5 bg-gray-50 rounded-xl p-3">
+        {cart.map((item) => (
+          <div key={item.product.id} className="flex justify-between text-sm py-0.5">
+            <span className="text-gray-700">{item.product.title} × {item.quantity}</span>
+            <span className="font-semibold">{formatCurrency(item.product.price * item.quantity, item.product.currency)}</span>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold text-base border-t pt-2 mt-1">
+          <span>Total</span><span>{formatCurrency(total, shop.currency)}</span>
+        </div>
+      </div>
+      <div>
+        <label className="text-xs font-medium text-gray-600 block mb-1">Your Name *</label>
+        <input type="text" placeholder="Ngozi Eze" value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <div>
+        <label className="text-xs font-medium text-gray-600 block mb-1">Table Number *</label>
+        <input type="text" placeholder="e.g. Table 5" value={form.tableNumber}
+          onChange={(e) => setForm((f) => ({ ...f, tableNumber: e.target.value }))}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+      </div>
+      <div>
+        <label className="text-xs font-medium text-gray-600 block mb-1">Special Requests (optional)</label>
+        <textarea rows={2} placeholder="e.g. No onions, extra spicy, allergy info..." value={form.notes}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+      </div>
+      <button onClick={handlePlace} disabled={!form.name.trim() || !form.tableNumber.trim() || placing}
+        className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all"
+        style={{ background: `linear-gradient(135deg, ${shop.theme.primaryColor}, #052e36)` }}>
+        {placing && <Loader2 className="w-4 h-4 animate-spin" />}
+        {placing ? 'Sending to Kitchen...' : `Place Order · ${formatCurrency(total, shop.currency)}`}
+      </button>
+    </div>
+  );
+}
+
+function RestaurantStorefront({ shop, products }: { shop: Shop; products: Product[] }) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showOrder, setShowOrder] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const addToCart = (product: Product) => setCart((c) => {
+    const existing = c.find((i) => i.product.id === product.id);
+    if (existing) return c.map((i) => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+    return [...c, { product, quantity: 1 }];
+  });
+  const updateQty = (id: string, qty: number) => {
+    if (qty === 0) setCart((c) => c.filter((i) => i.product.id !== id));
+    else setCart((c) => c.map((i) => i.product.id === id ? { ...i, quantity: qty } : i));
+  };
+
+  const activeProducts = products.filter((p) => p.status === 'active');
+  const categories = ['All', ...Array.from(new Set(activeProducts.map((p) => p.category).filter(Boolean) as string[]))];
+  const filtered = activeProducts.filter((p) => activeCategory === 'All' || p.category === activeCategory);
+  const cartTotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar shop={shop} cartCount={cartCount} cartTotal={cartTotal} onCartClick={() => setShowCart(true)} />
+      <Hero shop={shop} ctaContent={
+        <button onClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
+          className="mt-5 px-6 py-3 rounded-xl font-bold text-sm" style={{ background: shop.theme.accentColor, color: '#1f2937' }}>
+          {shop.theme.heroCtaText}
+        </button>
+      } />
+
+      <div id="menu" className="max-w-5xl mx-auto px-4 py-8">
+        {/* Info strip */}
+        <div className="flex flex-wrap gap-3 mb-5 text-sm">
+          {(shop.checkInTime || shop.availableHours) && (
+            <span className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-xl px-3 py-2 text-gray-600">
+              <Clock className="w-4 h-4 text-gray-400" />
+              Open: {shop.checkInTime ?? shop.availableHours?.start ?? '11:00'} – {shop.checkOutTime ?? shop.availableHours?.end ?? '22:00'}
+            </span>
+          )}
+          {shop.featuredAmenities?.slice(0, 3).map((a) => (
+            <span key={a} className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-xl px-3 py-2 text-gray-600">
+              <Wifi className="w-4 h-4 text-gray-400" />{a}
+            </span>
+          ))}
+        </div>
+
+        {shop.houseRules && (
+          <div className="mb-5 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+            <p className="text-xs text-amber-800"><strong>Note: </strong>{shop.houseRules}</p>
+          </div>
+        )}
+
+        {/* Category tabs */}
+        {categories.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 mb-6 -mx-1 px-1">
+            {categories.map((cat) => (
+              <button key={cat} onClick={() => setActiveCategory(cat)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all border"
+                style={activeCategory === cat
+                  ? { background: shop.theme.primaryColor, color: '#fff', borderColor: shop.theme.primaryColor }
+                  : { background: '#fff', color: '#6b7280', borderColor: '#e5e7eb' }}>
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Menu grid */}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center py-16 text-center">
+            <span className="text-4xl mb-3">🍽️</span>
+            <p className="text-gray-400 font-medium">No items in this category</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+            {filtered.map((item) => {
+              const inCart = cart.find((c) => c.product.id === item.id);
+              return (
+                <div key={item.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                  {item.images[0] ? (
+                    <div className="h-44 overflow-hidden">
+                      <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  ) : (
+                    <div className="h-36 bg-gray-50 flex items-center justify-center">
+                      <span className="text-3xl">🍽️</span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="font-bold text-gray-900 text-sm leading-snug">{item.title}</p>
+                      {item.category && (
+                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 bg-orange-50 text-orange-700">
+                          {item.category}
+                        </span>
+                      )}
+                    </div>
+                    {item.description && <p className="text-xs text-gray-400 line-clamp-2 mb-3">{item.description}</p>}
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-bold text-gray-900 text-base">{formatCurrency(item.price, item.currency)}</span>
+                      {inCart ? (
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => updateQty(item.id, inCart.quantity - 1)}
+                            className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-sm font-bold w-5 text-center">{inCart.quantity}</span>
+                          <button onClick={() => updateQty(item.id, inCart.quantity + 1)}
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white"
+                            style={{ background: shop.theme.primaryColor }}>
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => addToCart(item)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white"
+                          style={{ background: shop.theme.primaryColor }}>
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <ContactSection shop={shop} />
+        <Footer />
+      </div>
+
+      {/* Cart sidebar */}
+      {showCart && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCart(false)} />
+          <div className="relative bg-white w-full max-w-sm flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="font-bold text-gray-900">Your Order ({cartCount})</h3>
+              <button onClick={() => setShowCart(false)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+              {cart.length === 0 ? (
+                <div className="flex flex-col items-center py-12 text-center">
+                  <span className="text-3xl mb-3">🛒</span>
+                  <p className="text-gray-400 text-sm">Your order is empty. Add some dishes!</p>
+                </div>
+              ) : cart.map((item) => (
+                <div key={item.product.id} className="flex items-center gap-3">
+                  {item.product.images[0] && <img src={item.product.images[0]} alt={item.product.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{item.product.title}</p>
+                    <p className="text-xs text-gray-400">{formatCurrency(item.product.price, item.product.currency)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => updateQty(item.product.id, item.quantity - 1)} className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200"><Minus className="w-3 h-3" /></button>
+                    <span className="text-sm font-semibold w-4 text-center">{item.quantity}</span>
+                    <button onClick={() => updateQty(item.product.id, item.quantity + 1)} className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200"><Plus className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {cart.length > 0 && (
+              <div className="p-5 border-t">
+                <div className="flex justify-between font-bold text-base mb-4"><span>Total</span><span>{formatCurrency(cartTotal, shop.currency)}</span></div>
+                <button onClick={() => { setShowCart(false); setShowOrder(true); }}
+                  className="w-full py-3.5 rounded-xl text-white font-bold text-sm"
+                  style={{ background: shop.theme.primaryColor }}>
+                  Place Order
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Order modal */}
+      {showOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowOrder(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-gray-900 text-lg">Complete Your Order</h3>
+              <button onClick={() => setShowOrder(false)}><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <TableOrderModal shop={shop} cart={cart} onClose={() => setShowOrder(false)}
+              onSuccess={() => { setShowOrder(false); setCart([]); }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Root component ────────────────────────────────────────────────
 export default function StorefrontPage() {
   const params = useParams<{ slug: string }>();
@@ -948,6 +1216,7 @@ export default function StorefrontPage() {
   );
 
   if (shop.type === 'consultation') return <ConsultationStorefront shop={shop} products={products} />;
+  if (shop.type === 'hospitality' && shop.restaurantMode) return <RestaurantStorefront shop={shop} products={products} />;
   if (shop.type === 'hospitality') return <HospitalityStorefront shop={shop} products={products} />;
   if (shop.type === 'service') return <ServiceStorefront shop={shop} products={products} />;
   return <OnlineVendorStorefront shop={shop} products={products} />;

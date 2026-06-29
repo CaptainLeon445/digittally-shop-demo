@@ -24,11 +24,12 @@ function ShopCard({ shop }: { shop: Shop }) {
         {/* Banner / color header */}
         <div
           className="h-20 relative"
-          style={{
-            backgroundImage: shop.bannerUrl ? `url(${shop.bannerUrl})` : undefined,
+          style={shop.bannerUrl ? {
+            backgroundImage: `url(${shop.bannerUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            background: !shop.bannerUrl ? `linear-gradient(135deg, ${shop.theme?.primaryColor ?? '#0b7d8e'}, #052e36)` : undefined,
+          } : {
+            background: `linear-gradient(135deg, ${shop.theme?.primaryColor ?? '#0b7d8e'}, #052e36)`,
           }}
         >
           <div className="absolute inset-0 bg-black/10" />

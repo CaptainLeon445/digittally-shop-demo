@@ -10,7 +10,19 @@ import {
 } from './dummy-data';
 
 const AUTH_KEY = 'dt_auth_user';
+const SEED_VERSION = '2'; // bump this when dummy-data changes significantly
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
+
+// Clears all seed-data keys so fresh dummy data is reloaded on next access
+if (typeof window !== 'undefined') {
+  const stored = localStorage.getItem('dt_seed_version');
+  if (stored !== SEED_VERSION) {
+    ['dt_shops', 'dt_products', 'dt_orders', 'dt_reps', 'dt_transactions', 'dt_payment_links'].forEach(
+      (k) => localStorage.removeItem(k),
+    );
+    localStorage.setItem('dt_seed_version', SEED_VERSION);
+  }
+}
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
