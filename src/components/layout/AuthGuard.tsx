@@ -2,27 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { authStore } from '@/lib/store';
 import Spinner from '@/components/ui/Spinner';
-import { authApi, getToken } from '@/lib/api';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!getToken()) {
+    const user = authStore.getUser();
+    if (!user) {
       router.replace('/login');
-      return;
+    } else {
+      setChecking(false);
     }
-    authApi
-      .me()
-      .then(() => setChecking(false))
-      .catch(() => router.replace('/login'));
   }, [router]);
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-primary-50">
         <Spinner size="lg" />
       </div>
     );
