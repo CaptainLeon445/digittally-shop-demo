@@ -4,6 +4,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | '
 export type RepRole = 'manager' | 'rep' | 'support';
 export type RepStatus = 'active' | 'inactive' | 'pending';
 export type PlanTier = 'starter' | 'growth' | 'scale';
+export type MeetingType = 'in_person' | 'virtual' | 'both';
 
 // ── Auth ────────────────────────────────────────────────────────
 export interface User {
@@ -37,11 +38,25 @@ export interface Shop {
   contactPhone?: string;
   address?: string;
   socialLinks?: SocialLinks;
-  // Booking-specific (consultation / hospitality)
+
+  // Booking (consultation / hospitality / service)
   bookingEnabled?: boolean;
   bookingSlotMinutes?: number;
   bookingAdvanceDays?: number;
   availableHours?: { start: string; end: string };
+  availableDays?: number[]; // 0=Sun … 6=Sat
+
+  // Consultation / service
+  calendlyUrl?: string;
+  meetingLink?: string; // Zoom / Google Meet
+  maxDailyBookings?: number;
+
+  // Hospitality
+  checkInTime?: string;  // e.g. "14:00"
+  checkOutTime?: string; // e.g. "11:00"
+  minStayNights?: number;
+  houseRules?: string;
+  featuredAmenities?: string[];
 }
 
 export interface ShopTheme {
@@ -61,6 +76,7 @@ export interface SocialLinks {
 }
 
 // ── Inventory / Products ─────────────────────────────────────────
+// "Product" covers all types: physical product, service, room, etc.
 export interface Product {
   id: string;
   shopId: string;
@@ -70,14 +86,22 @@ export interface Product {
   price: number;
   comparePrice?: number;
   currency: string;
-  unit?: string;
+  unit?: string;       // piece / session / night / hour …
   sku?: string;
-  stock: number;
+  stock: number;       // qty for vendor; rooms available for hospitality; 999 for unlimited services
   status: 'active' | 'draft' | 'archived';
   variants: ProductVariant[];
   category?: string;
   createdAt: string;
   updatedAt: string;
+
+  // ── Service / consultation / hospitality extras ──────────────
+  duration?: number;        // minutes (consultation / service)
+  meetingType?: MeetingType; // in_person | virtual | both
+  meetingLink?: string;     // per-service Zoom / Meet link
+  capacity?: number;        // max guests (hospitality rooms)
+  amenities?: string[];     // room amenities
+  serviceArea?: string;     // geographic coverage (service shops)
 }
 
 export interface ProductVariant {
@@ -113,7 +137,6 @@ export interface Order {
   repId?: string;
   createdAt: string;
   updatedAt: string;
-  // For booking shops
   bookingDate?: string;
   bookingTime?: string;
   bookingService?: string;
@@ -230,7 +253,7 @@ export interface PaymentLink {
   createdAt: string;
 }
 
-// ── Booking (Consultation / Service) ────────────────────────────
+// ── Booking slot ──────────────────────────────────────────────────
 export interface BookingSlot {
   date: string;
   time: string;

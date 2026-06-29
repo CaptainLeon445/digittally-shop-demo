@@ -4,7 +4,7 @@ import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   Palette, Package, ShoppingCart, Wallet, Users,
-  ArrowLeft, Link as LinkIcon,
+  ArrowLeft, Link as LinkIcon, Eye,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -15,6 +15,7 @@ const TABS = [
   { label: 'Reps', href: '/reps', icon: Users },
   { label: 'Wallet', href: '/wallet', icon: Wallet },
   { label: 'Pay Links', href: '/payment-link', icon: LinkIcon },
+  { label: 'Preview', href: '/preview', icon: Eye },
 ];
 
 export default function ShopDetailLayout({ children }: { children: React.ReactNode }) {
