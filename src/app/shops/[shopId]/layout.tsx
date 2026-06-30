@@ -3,8 +3,7 @@
 import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Palette, Package, ShoppingCart, Wallet, Users,
-  ArrowLeft, Link as LinkIcon, Eye,
+  Palette, Package, ShoppingCart, Users, ArrowLeft, Eye,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -13,8 +12,6 @@ const TABS = [
   { label: 'Inventory', href: '/inventory', icon: Package },
   { label: 'Orders', href: '/orders', icon: ShoppingCart },
   { label: 'Reps', href: '/reps', icon: Users },
-  { label: 'Wallet', href: '/wallet', icon: Wallet },
-  { label: 'Pay Links', href: '/payment-link', icon: LinkIcon },
   { label: 'Preview', href: '/preview', icon: Eye },
 ];
 

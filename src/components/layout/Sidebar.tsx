@@ -4,13 +4,19 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Store, Plus, LogOut, LayoutDashboard, CreditCard, ChevronRight, User,
+  Wallet, Link as LinkIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { authStore } from '@/lib/store';
 
-const NAV = [
+const NAV_MAIN = [
   { href: '/shops', label: 'My Shops', icon: LayoutDashboard, exact: true },
   { href: '/shops/create', label: 'Create Shop', icon: Plus, exact: true },
+];
+
+const NAV_FINANCE = [
+  { href: '/wallet', label: 'Wallet', icon: Wallet, exact: false },
+  { href: '/payment-links', label: 'Pay Links', icon: LinkIcon, exact: false },
   { href: '/billing', label: 'Billing', icon: CreditCard, exact: true },
 ];
 
@@ -45,25 +51,42 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2 px-1">Navigation</p>
-        {NAV.map(({ href, label, icon: Icon, exact }) => {
-          const isActive = exact ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
-                isActive ? 'text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-              )}
-              style={isActive ? { background: 'rgba(255,255,255,0.13)' } : {}}
-            >
-              <Icon className={clsx('w-4 h-4 flex-shrink-0', isActive ? 'text-primary-200' : 'text-white/40')} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav className="relative flex-1 px-3 py-4 overflow-y-auto space-y-4">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2 px-1">Shops</p>
+          <div className="space-y-0.5">
+            {NAV_MAIN.map(({ href, label, icon: Icon, exact }) => {
+              const isActive = exact ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link key={href} href={href}
+                  className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
+                    isActive ? 'text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/5')}
+                  style={isActive ? { background: 'rgba(255,255,255,0.13)' } : {}}>
+                  <Icon className={clsx('w-4 h-4 flex-shrink-0', isActive ? 'text-primary-200' : 'text-white/40')} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-2 px-1">Finance</p>
+          <div className="space-y-0.5">
+            {NAV_FINANCE.map(({ href, label, icon: Icon, exact }) => {
+              const isActive = exact ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link key={href} href={href}
+                  className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
+                    isActive ? 'text-white' : 'text-white/60 hover:text-white/90 hover:bg-white/5')}
+                  style={isActive ? { background: 'rgba(255,255,255,0.13)' } : {}}>
+                  <Icon className={clsx('w-4 h-4 flex-shrink-0', isActive ? 'text-primary-200' : 'text-white/40')} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </nav>
 
       {/* User + Logout */}
