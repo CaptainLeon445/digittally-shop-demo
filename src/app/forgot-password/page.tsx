@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Store, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { authStore } from '@/lib/store';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -27,24 +27,32 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-primary-50">
+    <div className="min-h-screen flex items-center justify-center px-5 bg-[#f9fafb]">
       <div className="w-full max-w-sm">
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-[#0b7d8e] flex items-center justify-center">
-            <Store className="w-4 h-4 text-white" />
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 mb-10">
+          <div className="w-7 h-7 rounded-md bg-ink flex items-center justify-center">
+            <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
+              <rect x="3" y="3" width="6" height="6" rx="1" fill="white" />
+              <rect x="11" y="3" width="6" height="6" rx="1" fill="white" fillOpacity=".5" />
+              <rect x="3" y="11" width="6" height="6" rx="1" fill="white" fillOpacity=".5" />
+              <rect x="11" y="11" width="6" height="6" rx="1" fill="white" />
+            </svg>
           </div>
-          <p className="font-bold text-gray-900">Digit-Tally</p>
-        </div>
+          <p className="font-bold text-ink tracking-tight">Digit-Tally</p>
+        </Link>
 
         {sent ? (
-          <div className="bg-white rounded-2xl shadow-card border border-primary-100 p-8 text-center">
-            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-7 h-7 text-green-600" />
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-subtle">
+            <div className="w-12 h-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Check your email</h2>
+            <h2 className="font-serif text-xl text-ink mb-2">Check your inbox</h2>
             <p className="text-sm text-gray-500 mb-1">We sent a reset link to</p>
-            <p className="text-sm font-semibold text-gray-800 mb-6">{sentEmail}</p>
-            <p className="text-xs text-gray-400 mb-6">Didn&apos;t get it? Check your spam folder or try again.</p>
+            <p className="text-sm font-semibold text-ink mb-6">{sentEmail}</p>
+            <p className="text-xs text-gray-400 mb-6">Didn&apos;t get it? Check your spam folder or try a different email.</p>
             <Button variant="ghost" size="sm" onClick={() => setSent(false)} className="w-full">
               Try a different email
             </Button>
@@ -52,27 +60,29 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             <div className="mb-7">
-              <h1 className="text-2xl font-bold text-gray-900">Forgot your password?</h1>
-              <p className="text-sm text-gray-500 mt-1">Enter your email and we&apos;ll send a reset link.</p>
+              <h1 className="font-serif text-2xl text-ink">Reset your password</h1>
+              <p className="text-sm text-gray-400 mt-1">Enter your email and we&apos;ll send a reset link.</p>
             </div>
-            <div className="bg-white rounded-2xl shadow-card border border-primary-100 p-7">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div className="flex items-center gap-3 p-3 bg-primary-50 rounded-xl border border-primary-100">
-                  <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                  <p className="text-xs text-gray-600">We&apos;ll send a secure link to your registered email address.</p>
-                </div>
-                <Input label="Email Address" type="email" placeholder="you@business.com" error={errors.email?.message} {...register('email')} />
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-subtle">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <Input
+                  label="Email address"
+                  type="email"
+                  placeholder="you@business.com"
+                  error={errors.email?.message}
+                  {...register('email')}
+                />
                 <Button type="submit" variant="primary" size="lg" loading={isSubmitting} className="w-full">
-                  Send Reset Link
+                  Send reset link
                 </Button>
               </form>
             </div>
           </>
         )}
 
-        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mt-6">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Sign In
+        <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-gray-400 hover:text-ink transition-colors mt-6">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to sign in
         </Link>
       </div>
     </div>

@@ -9,17 +9,21 @@ interface BadgeProps {
 }
 
 const colorClasses: Record<BadgeColor, string> = {
-  primary: 'bg-primary-100 text-primary-dark border border-primary-200',
-  green:   'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  yellow:  'bg-amber-50 text-amber-700 border border-amber-200',
-  red:     'bg-red-50 text-red-700 border border-red-200',
-  gray:    'bg-gray-100 text-gray-600 border border-gray-200',
-  blue:    'bg-blue-50 text-blue-700 border border-blue-200',
+  primary: 'bg-primary/8 text-primary border border-primary/15',
+  green:   'bg-emerald-50 text-emerald-700 border border-emerald-100',
+  yellow:  'bg-amber-50 text-amber-700 border border-amber-100',
+  red:     'bg-red-50 text-red-600 border border-red-100',
+  gray:    'bg-gray-50 text-gray-500 border border-gray-200',
+  blue:    'bg-blue-50 text-blue-600 border border-blue-100',
 };
 
 export default function Badge({ color = 'gray', children, className }: BadgeProps) {
   return (
-    <span className={clsx('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', colorClasses[color], className)}>
+    <span className={clsx(
+      'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide',
+      colorClasses[color],
+      className,
+    )}>
       {children}
     </span>
   );

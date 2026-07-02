@@ -8,7 +8,7 @@ export default function PaymentLinksLayout({ children }: { children: React.React
     <AuthGuard>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 ml-60 min-h-screen">
+        <main className="flex-1 ml-56 min-h-screen">
           <div className="max-w-6xl mx-auto px-6 py-7">{children}</div>
         </main>
       </div>

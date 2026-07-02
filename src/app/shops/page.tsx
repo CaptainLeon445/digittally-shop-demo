@@ -2,63 +2,67 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Plus, Store, ShoppingBag, Calendar, Clock } from 'lucide-react';
+import { Plus, Store, ShoppingBag, Calendar, Clock, Wrench } from 'lucide-react';
 import { shopsStore } from '@/lib/store';
 import type { Shop } from '@/types';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 
-const TYPE_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  online_vendor: { label: 'Online Store', icon: ShoppingBag, color: 'bg-purple-100 text-purple-700' },
-  consultation:  { label: 'Consultation', icon: Calendar, color: 'bg-blue-100 text-blue-700' },
-  hospitality:   { label: 'Hospitality', icon: Clock, color: 'bg-teal-100 text-teal-700' },
-  service:       { label: 'Service', icon: Store, color: 'bg-orange-100 text-orange-700' },
+const TYPE_CONFIG: Record<string, { label: string; dot: string }> = {
+  online_vendor: { label: 'Online Store',   dot: 'bg-violet-500' },
+  consultation:  { label: 'Consultation',   dot: 'bg-blue-500' },
+  hospitality:   { label: 'Hospitality',    dot: 'bg-teal-500' },
+  service:       { label: 'Service',        dot: 'bg-amber-500' },
 };
 
 function ShopCard({ shop }: { shop: Shop }) {
   const type = TYPE_CONFIG[shop.type] ?? TYPE_CONFIG.online_vendor;
-  const TypeIcon = type.icon;
+
   return (
     <Link href={`/shops/${shop.id}`} className="block group">
-      <div className="bg-white rounded-2xl border border-primary-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all overflow-hidden">
-        {/* Banner / color header */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-card transition-all">
+        {/* Banner */}
         <div
-          className="h-20 relative"
+          className="h-[72px] relative"
           style={shop.bannerUrl ? {
             backgroundImage: `url(${shop.bannerUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           } : {
-            background: `linear-gradient(135deg, ${shop.theme?.primaryColor ?? '#0b7d8e'}, #052e36)`,
+            background: `linear-gradient(135deg, ${shop.theme?.primaryColor ?? '#0b7d8e'}22, ${shop.theme?.primaryColor ?? '#0b7d8e'}08)`,
+            borderBottom: `2px solid ${shop.theme?.primaryColor ?? '#0b7d8e'}22`,
           }}
         >
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-3 left-4 flex items-center gap-2">
+          <div className="absolute bottom-3 left-4">
             {shop.logoUrl ? (
-              <img src={shop.logoUrl} alt={shop.name} className="w-9 h-9 rounded-xl object-cover border-2 border-white/50" />
+              <img src={shop.logoUrl} alt={shop.name} className="w-9 h-9 rounded-lg object-cover border border-white shadow-sm" />
             ) : (
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center border-2 border-white/30" style={{ background: 'rgba(255,255,255,0.2)' }}>
+              <div
+                className="w-9 h-9 rounded-lg border border-white/30 flex items-center justify-center"
+                style={{ background: shop.theme?.primaryColor ?? '#0b7d8e' }}
+              >
                 <Store className="w-4 h-4 text-white" />
               </div>
             )}
           </div>
         </div>
 
-        <div className="p-4 pt-3">
-          <div className="flex items-start justify-between gap-2 mb-1.5">
-            <h3 className="font-semibold text-gray-900 text-sm leading-snug">{shop.name}</h3>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${type.color}`}>
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-semibold text-ink text-sm leading-snug">{shop.name}</h3>
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 flex-shrink-0`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${type.dot}`} />
               {type.label}
             </span>
           </div>
           {shop.description && (
-            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{shop.description}</p>
+            <p className="text-[12px] text-gray-400 line-clamp-1 mb-2">{shop.description}</p>
           )}
-          <div className="flex items-center justify-between">
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${shop.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-              {shop.status}
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+            <span className={`text-[10px] font-semibold ${shop.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
+              {shop.status === 'active' ? '● Live' : '○ Inactive'}
             </span>
-            <span className="text-[10px] text-gray-400">{shop.currency}</span>
+            <span className="text-[10px] text-gray-300 font-mono">{shop.currency}</span>
           </div>
         </div>
       </div>
@@ -76,13 +80,15 @@ export default function ShopsPage() {
     <div>
       <div className="flex items-center justify-between mb-7">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">My Shops</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage your storefronts</p>
+          <h1 className="text-[17px] font-semibold text-ink">My Shops</h1>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {shops ? `${shops.length} storefront${shops.length !== 1 ? 's' : ''}` : 'Your storefronts'}
+          </p>
         </div>
         <Link href="/shops/create">
-          <Button variant="primary" size="md">
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Shop
+          <Button variant="primary" size="sm">
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            New shop
           </Button>
         </Link>
       </div>
@@ -92,23 +98,23 @@ export default function ShopsPage() {
       )}
 
       {!isLoading && (!shops || shops.length === 0) && (
-        <div className="flex flex-col items-center py-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mb-4">
-            <Store className="w-8 h-8 text-primary" />
+        <div className="flex flex-col items-center py-24 text-center">
+          <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center mb-5">
+            <Store className="w-6 h-6 text-gray-300" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">No shops yet</h2>
-          <p className="text-gray-500 text-sm mb-6 max-w-xs">Create your first shop and start selling online today.</p>
+          <h2 className="text-sm font-semibold text-ink mb-1.5">No shops yet</h2>
+          <p className="text-gray-400 text-xs mb-6 max-w-xs">Create your first shop and start selling, taking bookings, or collecting payments online.</p>
           <Link href="/shops/create">
-            <Button variant="primary" size="lg">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Shop
+            <Button variant="primary" size="md">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Create your first shop
             </Button>
           </Link>
         </div>
       )}
 
       {!isLoading && shops && shops.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
           {shops.map((shop) => <ShopCard key={shop.id} shop={shop} />)}
         </div>
       )}

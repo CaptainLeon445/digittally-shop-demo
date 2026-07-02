@@ -15,23 +15,16 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #f0fafb;
-  /* subtle dot-grid pattern tinted with primary */
-  background-image:
-    radial-gradient(ellipse 80% 50% at 0% 0%,   rgba(11,125,142,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(11,125,142,0.05) 0%, transparent 60%),
-    radial-gradient(circle, rgba(11,125,142,0.09) 1px, transparent 1px);
-  background-size: auto, auto, 22px 22px;
-  background-attachment: fixed;
-  color: #111827;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
+  color: #0f1a1c;
 }
 
 /* ── Scrollbar ─────────────────────────────── */
-::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(11,125,142,0.25); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(11,125,142,0.45); }
+::-webkit-scrollbar-thumb { background: rgba(11,125,142,0.2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(11,125,142,0.4); }
 
 /* ── Focus ring ────────────────────────────── */
 :focus-visible {
@@ -42,24 +35,27 @@ body {
 /* ── Reusable card surface ─────────────────── */
 @layer components {
   .card {
-    @apply bg-white rounded-2xl border border-primary-100 shadow-card;
+    @apply bg-white rounded-2xl border border-gray-100 shadow-subtle;
   }
   .card-hover {
-    @apply transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5;
+    @apply transition-all duration-200 hover:shadow-card hover:-translate-y-0.5;
   }
   .page-header {
     @apply mb-7;
   }
   .page-title {
-    @apply text-xl font-bold text-gray-900;
+    @apply text-lg font-semibold text-ink;
   }
   .page-subtitle {
-    @apply text-sm text-gray-500 mt-0.5;
+    @apply text-sm text-ink-muted mt-0.5;
   }
   .section-label {
     @apply text-[11px] font-semibold uppercase tracking-widest text-primary mb-3;
   }
   .input-field {
-    @apply rounded-xl border border-primary-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+    @apply rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all;
+  }
+  .display-heading {
+    font-family: var(--font-dm-serif), Georgia, serif;
   }
 }

@@ -1,15 +1,15 @@
 import Sidebar from '@/components/layout/Sidebar';
 import AuthGuard from '@/components/layout/AuthGuard';
 
-export default function ShopsLayout({ children }: { children: React.ReactNode }) {
+export const metadata = { title: 'Reps | Digit-Tally' };
+
+export default function RepsLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="flex-1 ml-56 min-h-screen">
-          <div className="max-w-6xl mx-auto px-6 py-7">
-            {children}
-          </div>
+          <div className="max-w-6xl mx-auto px-6 py-7">{children}</div>
         </main>
       </div>
     </AuthGuard>
